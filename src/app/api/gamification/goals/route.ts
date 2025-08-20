@@ -1,36 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import connectToDatabase from '@/lib/mongodb';
-import { Habit } from '@/models/Habit';
-import { HabitCompletion } from '@/models/HabitCompletion';
+import Habit from '@/models/Habit';
+import HabitCompletion from '@/models/HabitCompletion';
 import { PokemonReward } from '@/models/PokemonReward';
-
-interface HabitData {
-  _id: string;
-  userId: string;
-  name: string;
-  createdAt: Date;
-  isArchived?: boolean;
-}
-
-interface CompletionData {
-  _id: string;
-  userId: string;
-  habitId: string;
-  completedAt: Date;
-}
-
-interface PokemonData {
-  _id: string;
-  userId: string;
-  pokemonId: number;
-  name: string;
-  canEvolve: boolean;
-}
 
 export async function GET(request: NextRequest) {
   try {
-    const { userId } = auth();
+    const { userId } = await auth();
     const { searchParams } = new URL(request.url);
     const requestedUserId = searchParams.get('userId');
 
@@ -253,7 +230,8 @@ export async function GET(request: NextRequest) {
   }
 }
 
-function calculateCurrentProgress(habits: HabitData[], completions: CompletionData[], pokemonRewards: PokemonData[]) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function calculateCurrentProgress(habits: any[], completions: any[], pokemonRewards: any[]) {
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   
@@ -296,7 +274,8 @@ function calculateCurrentProgress(habits: HabitData[], completions: CompletionDa
   }
 
   // Count evolvable Pokemon (Pokemon with canEvolve = true)
-  const evolvablePokemon = pokemonRewards.filter((pokemon: PokemonData) => pokemon.canEvolve === true).length;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const evolvablePokemon = pokemonRewards.filter((pokemon: any) => pokemon.canEvolve === true).length;
 
   return {
     currentStreak,
@@ -304,6 +283,6 @@ function calculateCurrentProgress(habits: HabitData[], completions: CompletionDa
     perfectDaysThisWeek,
     evolvablePokemon,
     totalHabits: habits.length,
-    activeHabits: habits.filter(h => !h.isArchived).length
+    activeHabits: habits.filter(h => h.isActive).length
   };
 }
