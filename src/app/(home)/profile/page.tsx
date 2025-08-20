@@ -9,10 +9,11 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { User, Settings, Moon, Sun, Bell, Trash2, Trophy } from "lucide-react";
+import { User, Settings, Moon, Sun, Bell, Trash2, Trophy, Target } from "lucide-react";
 import { useUser } from "@clerk/nextjs";
 import DataExportCard from "@/components/data-export-card";
 import { PokemonCollection } from "@/components/pokemon-collection";
+import PokemonGoals from "@/components/pokemon-goals";
 
 interface UserProfile {
   id: string;
@@ -46,6 +47,8 @@ export default function ProfilePage() {
     const tab = searchParams.get('tab');
     if (tab === 'pokemon') {
       setActiveTab('pokemon');
+    } else if (tab === 'goals') {
+      setActiveTab('goals');
     }
   }, [isLoaded, isSignedIn, searchParams]);
 
@@ -172,15 +175,16 @@ export default function ProfilePage() {
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold">Profile & Settings</h1>
           <p className="text-muted-foreground mt-2 text-sm sm:text-base">
-            Manage your account, view achievements, and Pokemon collection
+            Manage your account, view achievements, goals, and Pokemon collection
           </p>
         </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 h-auto sm:h-10">
+        <TabsList className="grid w-full grid-cols-1 sm:grid-cols-4 h-auto sm:h-10">
           <TabsTrigger value="profile" className="text-xs sm:text-sm">Profile & Settings</TabsTrigger>
           <TabsTrigger value="pokemon" className="text-xs sm:text-sm">Pokemon Collection</TabsTrigger>
+          <TabsTrigger value="goals" className="text-xs sm:text-sm">Goals & Progress</TabsTrigger>
           <TabsTrigger value="data" className="text-xs sm:text-sm">Data Management</TabsTrigger>
         </TabsList>
 
@@ -315,6 +319,26 @@ export default function ProfilePage() {
               ) : (
                 <div className="text-center p-8">
                   <p className="text-gray-500">Loading Pokemon collection...</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="goals">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Target className="h-5 w-5" />
+                Goals & Progress Tracking
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {clerkUser?.id ? (
+                <PokemonGoals userId={clerkUser.id} />
+              ) : (
+                <div className="text-center p-8">
+                  <p className="text-gray-500">Loading goals...</p>
                 </div>
               )}
             </CardContent>
