@@ -1,14 +1,23 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useMemo, lazy, Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { HabitCard, Habit } from "@/components/habit-card";
 import { HabitForm } from "@/components/habit-form";
-import { apiService, ApiHabit } from "@/services/api";
+import { HabitCardSkeleton } from "@/components/ui/loading-skeleton";
+import { apiService, ApiHabit, PokemonReward } from "@/services/api";
+import { RewardResult } from "@/lib/gamification-manager";
 import { Plus, Search, Filter, Target } from "lucide-react";
+
+// Lazy load Pokemon reward card for better performance
+const PokemonRewardCard = lazy(() => 
+  import("@/components/pokemon-reward-card").then(module => ({
+    default: module.PokemonRewardCard
+  }))
+);
 
 // Convert ApiHabit to Habit format
 const convertApiHabitToHabit = (apiHabit: ApiHabit): Habit => {
@@ -35,19 +44,19 @@ const convertApiHabitToHabit = (apiHabit: ApiHabit): Habit => {
 
 export default function HabitsPage() {
   const [habits, setHabits] = useState<Habit[]>([]);
-  const [filteredHabits, setFilteredHabits] = useState<Habit[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [editingHabit, setEditingHabit] = useState<Habit | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(true);
+  
+  // Pokemon reward states
+  const [pokemonRewards, setPokemonRewards] = useState<RewardResult[]>([]);
+  const [currentRewardIndex, setCurrentRewardIndex] = useState(0);
 
-  useEffect(() => {
-    loadHabits();
-  }, []);
-
-  const filterHabits = useCallback(() => {
+  // Memoize filtered habits for better performance
+  const filteredHabits = useMemo(() => {
     let filtered = [...habits];
 
     // Search filter
@@ -73,12 +82,12 @@ export default function HabitsPage() {
       filtered = filtered.filter(habit => habit.currentStreak > 0);
     }
 
-    setFilteredHabits(filtered);
+    return filtered;
   }, [habits, searchQuery, categoryFilter, statusFilter]);
 
   useEffect(() => {
-    filterHabits();
-  }, [filterHabits]);
+    loadHabits();
+  }, []);
 
   const loadHabits = async () => {
     try {
@@ -104,6 +113,26 @@ export default function HabitsPage() {
     try {
       const response = await apiService.toggleHabitCompletion(habitId);
       if (response.success) {
+        // Check if there are Pokemon rewards in the response
+        if (response.data && response.data.pokemonRewards && response.data.pokemonRewards.length > 0) {
+          // Map API rewards to RewardResult format
+          const mappedRewards: RewardResult[] = response.data.pokemonRewards.map((reward: PokemonReward) => ({
+            pokemon: {
+              ...reward.pokemon,
+              rarity: (reward.pokemon.rarity as 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary' | 'shiny') || 'common',
+              evolutionStage: 1,
+              canEvolve: true,
+              evolutionChain: undefined,
+              evolutionRequirement: undefined
+            },
+            isNewReward: true,
+            experienceGained: 10,
+            levelUp: false
+          }));
+          setPokemonRewards(mappedRewards);
+          setCurrentRewardIndex(0);
+        }
+        
         // Reload habits to get updated data
         await loadHabits();
       } else {
@@ -169,6 +198,22 @@ export default function HabitsPage() {
         if (response.success && response.data) {
           const newHabit = convertApiHabitToHabit(response.data.habit);
           setHabits(prev => [...prev, newHabit]);
+          
+          // Check for first habit reward
+          // TODO: Implement proper API response type for first habit rewards
+          /* 
+          if (response.data.firstHabitReward) {
+            setPokemonRewards([{
+              pokemon: response.data.firstHabitReward.pokemon,
+              isNewReward: response.data.firstHabitReward.isNewReward,
+              experienceGained: response.data.firstHabitReward.experienceGained,
+              levelUp: response.data.firstHabitReward.levelUp,
+              newLevel: response.data.firstHabitReward.newLevel,
+              achievement: response.data.firstHabitReward.achievement,
+            }]);
+            setCurrentRewardIndex(0);
+          }
+          */
         } else {
           console.error('Failed to create habit:', response.error);
           return;
@@ -185,6 +230,17 @@ export default function HabitsPage() {
   const handleCancel = () => {
     setShowForm(false);
     setEditingHabit(null);
+  };
+
+  const handlePokemonRewardClose = () => {
+    if (currentRewardIndex < pokemonRewards.length - 1) {
+      // Show next reward
+      setCurrentRewardIndex(prev => prev + 1);
+    } else {
+      // All rewards shown, clear the state
+      setPokemonRewards([]);
+      setCurrentRewardIndex(0);
+    }
   };
 
   const getUniqueCategories = () => {
@@ -291,7 +347,14 @@ export default function HabitsPage() {
       </Card>
 
       {/* Habits Grid */}
-      {filteredHabits.length === 0 ? (
+      {/* Loading State */}
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <HabitCardSkeleton key={i} />
+          ))}
+        </div>
+      ) : filteredHabits.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <div className="text-center space-y-4">
@@ -365,6 +428,22 @@ export default function HabitsPage() {
             </CardContent>
           </Card>
         </div>
+      )}
+      
+      {/* Pokemon Reward Modal */}
+      {pokemonRewards.length > 0 && currentRewardIndex < pokemonRewards.length && (
+        <Suspense fallback={<div className="fixed inset-0 bg-black/50 flex items-center justify-center">
+          <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
+            <p className="text-center text-gray-600">Loading your reward...</p>
+          </div>
+        </div>}>
+          <PokemonRewardCard
+            reward={pokemonRewards[currentRewardIndex]}
+            onClose={handlePokemonRewardClose}
+            showCelebration={true}
+          />
+        </Suspense>
       )}
     </div>
   );

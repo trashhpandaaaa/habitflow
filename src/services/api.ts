@@ -41,6 +41,25 @@ export interface ApiHabit {
   color?: string;
 }
 
+export interface PokemonReward {
+  pokemon: {
+    id: number;
+    name: string;
+    image: string;
+    types: string[];
+    rarity: string;
+  };
+  isNewReward: boolean;
+  experienceGained: number;
+  levelUp: boolean;
+  newLevel?: number;
+  achievement?: {
+    name: string;
+    description: string;
+    icon: string;
+  };
+}
+
 export interface PomodoroSession {
   _id: string;
   userId: string;
@@ -140,6 +159,7 @@ class ApiService {
     completed: boolean; 
     message: string;
     currentStreak?: number;
+    pokemonRewards?: PokemonReward[];
   }>> {
     return this.request(`/habits/${habitId}/complete`, {
       method: 'POST',

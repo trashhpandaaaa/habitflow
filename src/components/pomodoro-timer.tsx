@@ -89,6 +89,20 @@ export function PomodoroTimer({
         },
         body: JSON.stringify(sessionData),
       });
+
+      // Also check for Pokemon evolution after completing a work session
+      if (sessionData.sessionType === 'work' && sessionData.completed) {
+        try {
+          await fetch('/api/gamification/pomodoro', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
+        } catch (evolutionError) {
+          console.error('Error checking Pokemon evolution:', evolutionError);
+        }
+      }
     } catch (error) {
       console.error('Error saving pomodoro session:', error);
     }

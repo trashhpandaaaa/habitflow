@@ -4,12 +4,12 @@ A modern habit tracking application built with Next.js 15, featuring habit manag
 
 ## Features
 
-- 🎯 **Habit Management**: Create, track, and manage daily habits
-- ⏰ **Pomodoro Timer**: Built-in productivity timer with work/break sessions
-- 📊 **Analytics Dashboard**: Comprehensive statistics and progress tracking
-- 👤 **User Authentication**: Secure authentication powered by Clerk
-- 📱 **Responsive Design**: Beautiful UI that works on all devices
-- 🌐 **Real-time Data**: MongoDB integration for persistent data storage
+- **Habit Management**: Create, track, and manage daily habits
+- **Pomodoro Timer**: Built-in productivity timer with work/break sessions
+- **Analytics Dashboard**: Comprehensive statistics and progress tracking
+- **User Authentication**: Secure authentication powered by Clerk
+- **Responsive Design**: Beautiful UI that works on all devices
+- **Real-time Data**: MongoDB integration for persistent data storage
 
 ## Technology Stack
 

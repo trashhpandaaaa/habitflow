@@ -4,6 +4,7 @@ import { connectToDatabase } from '@/lib/mongoose';
 import HabitCompletion from '@/models/HabitCompletion';
 import Habit from '@/models/Habit';
 import User from '@/models/User';
+import { GamificationManager, RewardResult } from '@/lib/gamification-manager';
 import mongoose from 'mongoose';
 
 // Toggle habit completion
@@ -86,18 +87,32 @@ export async function POST(
       const currentStreak = (habit.currentStreak || 0) + 1;
       const bestStreak = Math.max(habit.bestStreak || 0, currentStreak);
 
-      await Habit.findByIdAndUpdate(habitId, {
+      const updatedHabit = await Habit.findByIdAndUpdate(habitId, {
         currentStreak,
         bestStreak,
         completedToday: true,
         lastCompletedAt: new Date(),
-      });
+      }, { new: true });
+
+      // Check for Pokemon rewards
+      let pokemonRewards: RewardResult[] = [];
+      try {
+        pokemonRewards = await GamificationManager.checkAndAwardRewards(
+          userId, 
+          updatedHabit, 
+          'daily'
+        );
+      } catch (gamificationError) {
+        console.error('Gamification error:', gamificationError);
+        // Don't fail the completion if gamification fails
+      }
 
       return NextResponse.json({
         message: 'Habit marked as completed',
         completed: true,
         completion,
         currentStreak,
+        pokemonRewards, // Include Pokemon rewards in the response
       });
     }
   } catch (error) {

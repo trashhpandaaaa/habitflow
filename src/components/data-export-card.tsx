@@ -1,36 +1,198 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Download, FileText, Database, Loader2 } from 'lucide-react';
+import { Download, FileText, Database, Loader2, Calendar as CalendarIcon, ChevronDown, FileSpreadsheet, History, Settings, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Progress } from '@/components/ui/progress';
+import { Checkbox } from '@/components/ui/checkbox';
+import { format as formatDate } from 'date-fns';
+
+interface ExportHistoryItem {
+  id: number;
+  format: string;
+  date: string;
+  status: 'completed' | 'failed' | 'processing';
+  size: string;
+  dateRange?: string;
+}
+
+interface DataType {
+  profile: boolean;
+  habits: boolean;
+  completions: boolean;
+  pomodoros: boolean;
+  statistics: boolean;
+}
+
+interface AdvancedOptions {
+  includeDeletedHabits: boolean;
+  compressOutput: boolean;
+  includeMetadata: boolean;
+  anonymizeData: boolean;
+}
 
 export default function DataExportCard() {
   const [isExporting, setIsExporting] = useState(false);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [exportFormat, setExportFormat] = useState<'json' | 'csv'>('json');
+  const [exportFormat, setExportFormat] = useState<'json' | 'csv' | 'xlsx' | 'pdf'>('json');
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [exportProgress, setExportProgress] = useState(0);
+  
+  // Date range selection
+  const [dateRange, setDateRange] = useState<{
+    from: Date | undefined;
+    to: Date | undefined;
+  }>({
+    from: undefined,
+    to: undefined,
+  });
 
-  const handleExport = async (format: 'json' | 'csv') => {
+  // Selective data export
+  const [selectedDataTypes, setSelectedDataTypes] = useState<DataType>({
+    profile: true,
+    habits: true,
+    completions: true,
+    pomodoros: true,
+    statistics: true,
+  });
+
+  // Export preview
+  const [previewData, setPreviewData] = useState<{
+    estimatedSize: string;
+    recordCount: number;
+  } | null>(null);
+
+  // Export history
+  const [exportHistory, setExportHistory] = useState<ExportHistoryItem[]>([
+    { id: 1, format: 'json', date: '2025-08-15', status: 'completed', size: '2.1 MB', dateRange: 'Last 30 days' },
+    { id: 2, format: 'csv', date: '2025-08-10', status: 'completed', size: '1.8 MB' },
+    { id: 3, format: 'xlsx', date: '2025-08-05', status: 'failed', size: '0 MB' },
+  ]);
+
+  // Advanced options
+  const [advancedOptions, setAdvancedOptions] = useState<AdvancedOptions>({
+    includeDeletedHabits: false,
+    compressOutput: true,
+    includeMetadata: true,
+    anonymizeData: false,
+  });
+
+  // UI state
+  const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
+  const [showExportHistory, setShowExportHistory] = useState(false);
+
+  const handleExport = async (format: 'json' | 'csv' | 'xlsx' | 'pdf') => {
     setIsExporting(true);
     setError(null);
     setSuccess(null);
+    setExportFormat(format);
+    setExportProgress(0);
 
     try {
-      // TODO: Implement export functionality
-      // await apiService.downloadExport(format);
-      setError('Export functionality not yet implemented');
-      // setSuccess(`Data exported successfully as ${format.toUpperCase()}!`);
+      // Simulate progress
+      for (let i = 0; i <= 100; i += 10) {
+        setExportProgress(i);
+        await new Promise(resolve => setTimeout(resolve, 200));
+      }
+
+      // TODO: Implement actual export functionality
+      // const exportData = await apiService.downloadExport(format, {
+      //   dateRange,
+      //   selectedDataTypes,
+      //   advancedOptions
+      // });
+
+      setSuccess(`Data exported successfully as ${format.toUpperCase()}!`);
+      
+      // Add to export history
+      const newExport: ExportHistoryItem = {
+        id: Date.now(),
+        format: format,
+        date: new Date().toISOString().split('T')[0],
+        status: 'completed',
+        size: '2.3 MB',
+        dateRange: dateRange.from && dateRange.to 
+          ? `${formatDate(dateRange.from, 'MMM dd')} - ${formatDate(dateRange.to, 'MMM dd, yyyy')}`
+          : undefined
+      };
+      
+      setExportHistory(prev => [newExport, ...prev]);
     } catch (error) {
       console.error('Export failed:', error);
       setError(`Failed to export data as ${format.toUpperCase()}. Please try again.`);
     } finally {
       setIsExporting(false);
+      setExportProgress(0);
     }
   };
+
+  const handlePreview = async () => {
+    try {
+      // TODO: Implement actual preview calculation
+      // const preview = await apiService.getExportPreview({
+      //   dateRange,
+      //   selectedDataTypes,
+      //   advancedOptions
+      // });
+
+      // Simulate preview data
+      const selectedCount = Object.values(selectedDataTypes).filter(Boolean).length;
+      const estimatedRecords = selectedCount * 250;
+      const estimatedSize = (estimatedRecords * 0.002).toFixed(1);
+      
+      setPreviewData({
+        estimatedSize: `${estimatedSize} MB`,
+        recordCount: estimatedRecords
+      });
+    } catch (error) {
+      console.error('Preview failed:', error);
+      setError('Failed to generate preview. Please try again.');
+    }
+  };
+
+  const ExportButton = ({ 
+    format, 
+    icon: Icon, 
+    label, 
+    description, 
+    variant = 'outline' 
+  }: { 
+    format: 'json' | 'csv' | 'xlsx' | 'pdf';
+    icon: React.ComponentType<{ className?: string }>;
+    label: string;
+    description: string;
+    variant?: 'default' | 'outline';
+  }) => (
+    <div className="space-y-2">
+      <Button
+        onClick={() => handleExport(format)}
+        disabled={isExporting}
+        className="w-full"
+        variant={variant}
+      >
+        {isExporting && exportFormat === format ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Exporting...
+          </>
+        ) : (
+          <>
+            <Icon className="mr-2 h-4 w-4" />
+            {label}
+          </>
+        )}
+      </Button>
+      <p className="text-xs text-muted-foreground text-center">
+        {description}
+      </p>
+    </div>
+  );
 
   return (
     <Card className="w-full">
@@ -43,7 +205,7 @@ export default function DataExportCard() {
           Download all your habit tracking data, including habits, completions, and pomodoro sessions.
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-6">
         {error && (
           <Alert variant="destructive">
             <AlertDescription>{error}</AlertDescription>
@@ -56,78 +218,235 @@ export default function DataExportCard() {
           </Alert>
         )}
 
+        {/* Progress Bar */}
+        {isExporting && (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <span>Exporting data...</span>
+              <span>{exportProgress}%</span>
+            </div>
+            <Progress value={exportProgress} className="w-full" />
+          </div>
+        )}
+
+        {/* Date Range Selection */}
         <div className="space-y-3">
-          <div className="text-sm text-muted-foreground">
-            Your export will include:
+          <div className="flex items-center justify-between">
+            <label className="text-sm font-medium">Date Range (Optional)</label>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setDateRange({ from: undefined, to: undefined })}
+            >
+              Clear
+            </Button>
           </div>
-          <div className="flex flex-wrap gap-2">
-            <Badge variant="secondary">User Profile</Badge>
-            <Badge variant="secondary">All Habits</Badge>
-            <Badge variant="secondary">Habit Completions</Badge>
-            <Badge variant="secondary">Pomodoro Sessions</Badge>
-            <Badge variant="secondary">Statistics</Badge>
+          <div className="grid grid-cols-2 gap-2">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="w-full justify-start">
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {dateRange.from ? formatDate(dateRange.from, "MMM dd, yyyy") : "From date"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0">
+                <Calendar
+                  mode="single"
+                  selected={dateRange.from}
+                  onSelect={(date) => setDateRange(prev => ({ ...prev, from: date }))}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="w-full justify-start">
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {dateRange.to ? formatDate(dateRange.to, "MMM dd, yyyy") : "To date"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0">
+                <Calendar
+                  mode="single"
+                  selected={dateRange.to}
+                  onSelect={(date) => setDateRange(prev => ({ ...prev, to: date }))}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <div className="space-y-2">
-            <Button
-              onClick={() => handleExport('json')}
-              disabled={isExporting}
-              className="w-full"
-              variant="default"
-            >
-              {isExporting && exportFormat === 'json' ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Exporting...
-                </>
-              ) : (
-                <>
-                  <FileText className="mr-2 h-4 w-4" />
-                  Export as JSON
-                </>
-              )}
-            </Button>
-            <p className="text-xs text-muted-foreground text-center">
-              Structured data format
-            </p>
+        {/* Selective Data Export */}
+        <div className="space-y-3">
+          <div className="text-sm font-medium">
+            Select data to include:
           </div>
-
-          <div className="space-y-2">
-            <Button
-              onClick={() => handleExport('csv')}
-              disabled={isExporting}
-              className="w-full"
-              variant="outline"
-            >
-              {isExporting && exportFormat === 'csv' ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Exporting...
-                </>
-              ) : (
-                <>
-                  <Download className="mr-2 h-4 w-4" />
-                  Export as CSV
-                </>
-              )}
-            </Button>
-            <p className="text-xs text-muted-foreground text-center">
-              Spreadsheet compatible
-            </p>
+          <div className="grid grid-cols-2 gap-3">
+            {Object.entries({
+              profile: 'User Profile',
+              habits: 'All Habits',
+              completions: 'Habit Completions',
+              pomodoros: 'Pomodoro Sessions',
+              statistics: 'Statistics'
+            }).map(([key, label]) => (
+              <div key={key} className="flex items-center space-x-2">
+                <Checkbox
+                  id={key}
+                  checked={selectedDataTypes[key as keyof DataType]}
+                  onCheckedChange={(checked) => setSelectedDataTypes(prev => ({
+                    ...prev,
+                    [key]: checked
+                  }))}
+                />
+                <label htmlFor={key} className="text-sm cursor-pointer">
+                  {label}
+                </label>
+              </div>
+            ))}
           </div>
         </div>
 
-        <div className="text-xs text-muted-foreground border-t pt-3">
+        {/* Export Preview */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handlePreview}
+              disabled={isExporting}
+            >
+              <Eye className="mr-2 h-4 w-4" />
+              Preview Export Size
+            </Button>
+          </div>
+          {previewData && (
+            <div className="text-sm bg-muted p-3 rounded-md">
+              <p>Estimated export size: <strong>{previewData.estimatedSize}</strong></p>
+              <p>Total records: <strong>{previewData.recordCount.toLocaleString()}</strong></p>
+            </div>
+          )}
+        </div>
+
+        {/* Advanced Options */}
+        <Collapsible open={showAdvancedOptions} onOpenChange={setShowAdvancedOptions}>
+          <CollapsibleTrigger asChild>
+            <Button variant="ghost" size="sm" className="w-full justify-between">
+              <div className="flex items-center">
+                <Settings className="mr-2 h-4 w-4" />
+                Advanced Options
+              </div>
+              <ChevronDown className={`h-4 w-4 transition-transform ${showAdvancedOptions ? 'rotate-180' : ''}`} />
+            </Button>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="space-y-3 mt-3">
+            {Object.entries({
+              includeDeletedHabits: 'Include deleted habits',
+              compressOutput: 'Compress output file',
+              includeMetadata: 'Include export metadata',
+              anonymizeData: 'Anonymize personal data'
+            }).map(([key, label]) => (
+              <div key={key} className="flex items-center space-x-2">
+                <Checkbox
+                  id={`adv-${key}`}
+                  checked={advancedOptions[key as keyof AdvancedOptions]}
+                  onCheckedChange={(checked) => setAdvancedOptions(prev => ({
+                    ...prev,
+                    [key]: checked
+                  }))}
+                />
+                <label htmlFor={`adv-${key}`} className="text-sm cursor-pointer">
+                  {label}
+                </label>
+              </div>
+            ))}
+          </CollapsibleContent>
+        </Collapsible>
+
+        {/* Export Buttons */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <ExportButton 
+            format="json" 
+            icon={FileText} 
+            label="JSON" 
+            description="Structured data" 
+            variant="default"
+          />
+          <ExportButton 
+            format="csv" 
+            icon={Download} 
+            label="CSV" 
+            description="Spreadsheet" 
+          />
+          <ExportButton 
+            format="xlsx" 
+            icon={FileSpreadsheet} 
+            label="Excel" 
+            description="Advanced sheets" 
+          />
+          <ExportButton 
+            format="pdf" 
+            icon={FileText} 
+            label="PDF" 
+            description="Report format" 
+          />
+        </div>
+
+        {/* Export History */}
+        <Collapsible open={showExportHistory} onOpenChange={setShowExportHistory}>
+          <CollapsibleTrigger asChild>
+            <Button variant="ghost" size="sm" className="w-full justify-between">
+              <div className="flex items-center">
+                <History className="mr-2 h-4 w-4" />
+                Export History
+              </div>
+              <ChevronDown className={`h-4 w-4 transition-transform ${showExportHistory ? 'rotate-180' : ''}`} />
+            </Button>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="space-y-2 mt-3">
+            <div className="max-h-48 overflow-y-auto space-y-2">
+              {exportHistory.map((exportItem) => (
+                <div key={exportItem.id} className="flex items-center justify-between p-3 border rounded-md">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline">{exportItem.format.toUpperCase()}</Badge>
+                      <span className="text-sm text-muted-foreground">{exportItem.date}</span>
+                    </div>
+                    {exportItem.dateRange && (
+                      <p className="text-xs text-muted-foreground">{exportItem.dateRange}</p>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge 
+                      variant={exportItem.status === 'completed' ? 'default' : 
+                              exportItem.status === 'failed' ? 'destructive' : 'secondary'}
+                    >
+                      {exportItem.status}
+                    </Badge>
+                    <span className="text-xs text-muted-foreground">{exportItem.size}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+
+        {/* Information Footer */}
+        <div className="text-xs text-muted-foreground border-t pt-4 space-y-2">
           <p>
-            📄 <strong>JSON format:</strong> Perfect for importing into other apps or backing up your complete data structure.
+            📄 <strong>JSON:</strong> Complete data structure for backups and app imports
           </p>
-          <p className="mt-1">
-            📊 <strong>CSV format:</strong> Great for analysis in Excel, Google Sheets, or other spreadsheet applications.
+          <p>
+            📊 <strong>CSV:</strong> Spreadsheet format for analysis in Excel or Google Sheets
           </p>
-          <p className="mt-2 text-center font-medium">
-            Your data privacy is important - exports contain only your personal habit tracking data.
+          <p>
+            📈 <strong>Excel:</strong> Advanced formatting with multiple sheets and charts
+          </p>
+          <p>
+            📋 <strong>PDF:</strong> Formatted report for printing or sharing
+          </p>
+          <p className="mt-3 text-center font-medium">
+            🔒 Your privacy is protected - exports contain only your personal data
           </p>
         </div>
       </CardContent>

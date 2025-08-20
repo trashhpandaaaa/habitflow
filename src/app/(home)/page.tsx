@@ -10,6 +10,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Plus, Target, TrendingUp, Calendar, Timer, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { apiService, ApiHabit } from "@/services/api";
+import { DashboardSkeleton } from "@/components/ui/loading-skeleton";
 
 export default function Dashboard() {
   const { user, isLoaded } = useUser();
@@ -17,6 +18,7 @@ export default function Dashboard() {
   const [habits, setHabits] = useState<ApiHabit[]>([]);
   const [loading, setLoading] = useState(true);
   const [showWelcome, setShowWelcome] = useState(false);
+  const [isNewUser, setIsNewUser] = useState(false);
 
   useEffect(() => {
     if (isLoaded && user) {
@@ -24,6 +26,7 @@ export default function Dashboard() {
       // Check if this is a welcome redirect
       if (searchParams.get('welcome') === 'true') {
         setShowWelcome(true);
+        setIsNewUser(searchParams.get('newUser') === 'true');
       }
     }
   }, [isLoaded, user, searchParams]);
@@ -49,16 +52,7 @@ export default function Dashboard() {
   };
 
   if (!isLoaded || loading) {
-    return (
-      <div className="container mx-auto p-6">
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading your habits...</p>
-          </div>
-        </div>
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   if (!user) {
@@ -93,7 +87,8 @@ export default function Dashboard() {
           <AlertDescription className="text-green-800">
             <div className="flex items-center justify-between">
               <div>
-                <strong>Welcome to HabitFlow!</strong> 🎉 Your account is ready. 
+                <strong>Welcome to HabitFlow!</strong> 🎉 Your account is ready.
+                {isNewUser && " You've received your first Pokemon! 🌟"} 
                 Start by creating your first habit to begin tracking your progress.
               </div>
               <Button

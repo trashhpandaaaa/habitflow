@@ -5,11 +5,24 @@ import "./globals.css";
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
+  display: "swap", // Improve font loading performance
+  preload: true,
 });
 
 export const metadata: Metadata = {
   title: "HabitFlow - Habit Tracker & Pomodoro",
   description: "Track your habits and boost productivity with Pomodoro timer.",
+  // Performance optimizations
+  metadataBase: new URL('https://habitflow.app'), // Replace with your actual domain
+  openGraph: {
+    title: "HabitFlow - Habit Tracker & Pomodoro",
+    description: "Track your habits and boost productivity with Pomodoro timer.",
+    type: "website",
+  },
+  // Preload critical resources
+  other: {
+    'preload': '/api/user',
+  },
 };
 
 // Setup guide component for when Clerk isn't configured
@@ -127,6 +140,26 @@ export default function RootLayout({
       signUpUrl="/sign-up"
     >
       <html lang="en">
+        <head>
+          {/* Preload critical resources */}
+          <link rel="preconnect" href="https://api.clerk.com" />
+          <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+          {/* Prevent layout shift */}
+          <style dangerouslySetInnerHTML={{
+            __html: `
+              body { margin: 0; }
+              .loading-skeleton {
+                background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+                background-size: 200% 100%;
+                animation: loading 1.5s infinite;
+              }
+              @keyframes loading {
+                0% { background-position: 200% 0; }
+                100% { background-position: -200% 0; }
+              }
+            `
+          }} />
+        </head>
         <body className={`${dmSans.className} antialiased`}>
           {children}
         </body>

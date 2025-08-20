@@ -6,7 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NavbarSidebar } from "./navbar-sidebar";
 import React from "react";
-import { MenuIcon, LogOut, User } from "lucide-react";
+import { MenuIcon, LogOut, User, Trophy } from "lucide-react";
 import { useUser, SignOutButton } from "@clerk/nextjs";
 import {
   DropdownMenu,
@@ -105,6 +105,12 @@ export const Navbar = () => {
                   <Link href="/profile" className="flex items-center gap-2">
                     <User className="h-4 w-4" />
                     Profile
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/profile?tab=pokemon" className="flex items-center gap-2">
+                    <Trophy className="h-4 w-4" />
+                    Pokemon Collection
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
