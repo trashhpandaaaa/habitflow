@@ -7,7 +7,7 @@ import User from '@/models/User';
 // Get single habit
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { userId } = await auth();
@@ -29,8 +29,9 @@ export async function GET(
       );
     }
 
+    const resolvedParams = await params;
     const habit = await Habit.findOne({
-      _id: params.id,
+      _id: resolvedParams.id,
       userId: user._id,
     });
 
@@ -62,7 +63,7 @@ export async function GET(
 // Update habit
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { userId } = await auth();
@@ -98,9 +99,10 @@ export async function PUT(
       delete updateData.target;
     }
 
+    const resolvedParams = await params;
     const habit = await Habit.findOneAndUpdate(
       {
-        _id: params.id,
+        _id: resolvedParams.id,
         userId: user._id,
       },
       updateData,
@@ -135,7 +137,7 @@ export async function PUT(
 // Delete habit
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { userId } = await auth();
@@ -157,8 +159,9 @@ export async function DELETE(
       );
     }
 
+    const resolvedParams = await params;
     const habit = await Habit.findOneAndDelete({
-      _id: params.id,
+      _id: resolvedParams.id,
       userId: user._id,
     });
 

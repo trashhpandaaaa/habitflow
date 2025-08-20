@@ -9,7 +9,7 @@ import mongoose from 'mongoose';
 // Toggle habit completion
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { userId } = await auth();
@@ -31,7 +31,8 @@ export async function POST(
       );
     }
 
-    const habitId = params.id;
+    const resolvedParams = await params;
+    const habitId = resolvedParams.id;
     const today = new Date().toISOString().split('T')[0];
 
     // Check if habit belongs to user
@@ -111,7 +112,7 @@ export async function POST(
 // Get habit completions
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { userId } = await auth();
@@ -137,12 +138,13 @@ export async function GET(
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
 
+    const resolvedParams = await params;
     const query: {
       habitId: mongoose.Types.ObjectId;
       userId: string;
       date?: { $gte: string; $lte: string };
     } = {
-      habitId: new mongoose.Types.ObjectId(params.id),
+      habitId: new mongoose.Types.ObjectId(resolvedParams.id),
       userId: userId, // Use Clerk userId instead of user._id.toString()
     };
 

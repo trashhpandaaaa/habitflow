@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
-import { apiService, ClientAuth } from "@/services/api";
 
 interface AuthFormProps {
   mode: 'login' | 'register';
@@ -15,7 +14,7 @@ interface AuthFormProps {
   onModeChange?: (mode: 'login' | 'register') => void;
 }
 
-export function AuthForm({ mode, onSuccess, onModeChange }: AuthFormProps) {
+export function AuthForm({ mode, onModeChange }: AuthFormProps) {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -36,19 +35,8 @@ export function AuthForm({ mode, onSuccess, onModeChange }: AuthFormProps) {
     setLoading(true);
 
     try {
-      const response = mode === 'login' 
-        ? await apiService.login({ email: formData.email, password: formData.password })
-        : await apiService.register(formData);
-
-      if (response.success && response.data) {
-        // Store user and token
-        ClientAuth.setStoredUser(response.data.user);
-        ClientAuth.setStoredToken(response.data.token);
-        
-        onSuccess?.();
-      } else {
-        setError(response.error || 'An error occurred');
-      }
+      // TODO: Implement auth with Clerk - this form is not currently used
+      setError('Authentication is handled by Clerk - this form is deprecated');
     } catch {
       setError('Network error occurred');
     } finally {

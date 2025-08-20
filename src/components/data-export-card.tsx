@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { apiService } from '@/services/api';
 
 export default function DataExportCard() {
   const [isExporting, setIsExporting] = useState(false);
@@ -21,8 +20,10 @@ export default function DataExportCard() {
     setSuccess(null);
 
     try {
-      await apiService.downloadExport(format);
-      setSuccess(`Data exported successfully as ${format.toUpperCase()}!`);
+      // TODO: Implement export functionality
+      // await apiService.downloadExport(format);
+      setError('Export functionality not yet implemented');
+      // setSuccess(`Data exported successfully as ${format.toUpperCase()}!`);
     } catch (error) {
       console.error('Export failed:', error);
       setError(`Failed to export data as ${format.toUpperCase()}. Please try again.`);

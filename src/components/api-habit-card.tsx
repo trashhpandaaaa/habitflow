@@ -17,7 +17,7 @@ export function ApiHabitCard({
   habit, 
   onToggleComplete
 }: ApiHabitCardProps) {
-  const progressPercentage = Math.min((habit.completedCount / habit.targetCount) * 100, 100);
+  const progressPercentage = Math.min((habit.currentStreak / habit.target) * 100, 100);
   
   const getFrequencyText = () => {
     switch (habit.frequency) {
@@ -85,7 +85,7 @@ export function ApiHabitCard({
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
             <span>Progress</span>
-            <span>{habit.completedCount}/{habit.targetCount}</span>
+            <span>{habit.currentStreak}/{habit.target}</span>
           </div>
           <Progress value={progressPercentage} className="h-2" />
         </div>

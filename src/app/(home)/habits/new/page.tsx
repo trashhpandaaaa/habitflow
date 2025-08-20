@@ -15,8 +15,7 @@ export default function NewHabitPage() {
         description: habitData.description,
         category: habitData.category,
         target: habitData.targetCount,
-        frequency: habitData.frequency,
-        reminderTime: habitData.reminderTime
+        frequency: habitData.frequency
       });
       router.push('/habits');
     } catch (error) {

@@ -11,7 +11,7 @@ export default function WelcomeRedirect() {
   useEffect(() => {
     if (isLoaded && user) {
       // Check if user just signed up (less than 5 minutes ago)
-      const userCreatedAt = new Date(user.createdAt);
+      const userCreatedAt = user.createdAt ? new Date(user.createdAt) : new Date();
       const now = new Date();
       const timeDiff = now.getTime() - userCreatedAt.getTime();
       const minutesDiff = Math.floor(timeDiff / (1000 * 60));
