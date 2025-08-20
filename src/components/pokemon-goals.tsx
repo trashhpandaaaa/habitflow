@@ -349,10 +349,10 @@ export function PokemonGoals({ userId, className }: PokemonGoalsProps) {
                         rarityConfig.borderColor,
                         "border"
                       )}>
-                        <div className="text-2xl mb-1">
-                          {goal.reward.type === 'pokemon' && '🎁'}
-                          {goal.reward.type === 'evolution' && '⚡'}
-                          {goal.reward.type === 'achievement' && '🏆'}
+                        <div className="text-2xl mb-1 flex justify-center">
+                          {goal.reward.type === 'pokemon' && <Gift className="h-6 w-6" />}
+                          {goal.reward.type === 'evolution' && <Zap className="h-6 w-6" />}
+                          {goal.reward.type === 'achievement' && <Trophy className="h-6 w-6" />}
                         </div>
                         <div className={cn("text-xs font-medium mb-1", rarityConfig.textColor)}>
                           {goal.reward.name}
@@ -384,11 +384,23 @@ export function PokemonGoals({ userId, className }: PokemonGoalsProps) {
             <Sparkles className="h-4 w-4" />
             Pro Tips
           </h4>
-          <ul className="text-sm text-blue-700 space-y-1">
-            <li>• Start with 3-day streaks to get your first evolvable Pokemon</li>
-            <li>• Use the Pomodoro timer to evolve your Pokemon collection</li>
-            <li>• Perfect days (completing all habits) give better rewards</li>
-            <li>• Longer streaks unlock rarer and more powerful Pokemon</li>
+          <ul className="text-sm text-blue-700 space-y-2">
+            <li className="flex items-center gap-2">
+              <CheckCircle className="h-3 w-3 flex-shrink-0" />
+              Start with 3-day streaks to get your first evolvable Pokemon
+            </li>
+            <li className="flex items-center gap-2">
+              <Zap className="h-3 w-3 flex-shrink-0" />
+              Use the Pomodoro timer to evolve your Pokemon collection
+            </li>
+            <li className="flex items-center gap-2">
+              <Star className="h-3 w-3 flex-shrink-0" />
+              Perfect days (completing all habits) give better rewards
+            </li>
+            <li className="flex items-center gap-2">
+              <Crown className="h-3 w-3 flex-shrink-0" />
+              Longer streaks unlock rarer and more powerful Pokemon
+            </li>
           </ul>
         </div>
       </CardContent>
