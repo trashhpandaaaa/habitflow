@@ -166,25 +166,25 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-8 max-w-6xl">
+    <div className="container mx-auto p-4 sm:p-6 space-y-6 sm:space-y-8 max-w-6xl">
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Profile & Settings</h1>
-          <p className="text-muted-foreground mt-2">
+          <h1 className="text-2xl sm:text-3xl font-bold">Profile & Settings</h1>
+          <p className="text-muted-foreground mt-2 text-sm sm:text-base">
             Manage your account, view achievements, and Pokemon collection
           </p>
         </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="profile">Profile & Settings</TabsTrigger>
-          <TabsTrigger value="pokemon">Pokemon Collection</TabsTrigger>
-          <TabsTrigger value="data">Data Management</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 h-auto sm:h-10">
+          <TabsTrigger value="profile" className="text-xs sm:text-sm">Profile & Settings</TabsTrigger>
+          <TabsTrigger value="pokemon" className="text-xs sm:text-sm">Pokemon Collection</TabsTrigger>
+          <TabsTrigger value="data" className="text-xs sm:text-sm">Data Management</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="profile" className="space-y-6">
+        <TabsContent value="profile" className="space-y-4 sm:space-y-6">
           {/* Profile Information */}
           <Card>
             <CardHeader>
@@ -193,60 +193,62 @@ export default function ProfilePage() {
                 Profile Information
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <CardContent className="space-y-4 sm:space-y-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Full Name</Label>
+                  <Label htmlFor="name" className="text-sm sm:text-base">Full Name</Label>
                   {isEditing ? (
                     <Input
                       id="name"
                       value={profile.name}
                       onChange={(e) => handleInputChange('name', e.target.value)}
+                      className="text-sm sm:text-base"
                     />
                   ) : (
-                    <div className="p-2 bg-muted rounded-md">{profile.name}</div>
+                    <div className="p-2 sm:p-3 bg-muted rounded-md text-sm sm:text-base">{profile.name}</div>
                   )}
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <div className="p-2 bg-muted rounded-md">{profile.email}</div>
+                  <Label htmlFor="email" className="text-sm sm:text-base">Email</Label>
+                  <div className="p-2 sm:p-3 bg-muted rounded-md text-sm sm:text-base">{profile.email}</div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Member Since</Label>
-                  <div className="p-2 bg-muted rounded-md">
+                  <Label className="text-sm sm:text-base">Member Since</Label>
+                  <div className="p-2 sm:p-3 bg-muted rounded-md text-sm sm:text-base">
                     {new Date(profile.joinDate).toLocaleDateString()}
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="reminderTime">Daily Reminder Time</Label>
+                  <Label htmlFor="reminderTime" className="text-sm sm:text-base">Daily Reminder Time</Label>
                   {isEditing ? (
                     <Input
                       id="reminderTime"
                       type="time"
                       value={profile.preferences.reminderTime}
                       onChange={(e) => handlePreferenceChange('reminderTime', e.target.value)}
+                      className="text-sm sm:text-base"
                     />
                   ) : (
-                    <div className="p-2 bg-muted rounded-md">{profile.preferences.reminderTime}</div>
+                    <div className="p-2 sm:p-3 bg-muted rounded-md text-sm sm:text-base">{profile.preferences.reminderTime}</div>
                   )}
                 </div>
               </div>
 
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-3">
                 {isEditing ? (
                   <>
-                    <Button onClick={saveProfile} disabled={isSaving}>
+                    <Button onClick={saveProfile} disabled={isSaving} className="w-full sm:w-auto">
                       {isSaving ? 'Saving...' : 'Save Changes'}
                     </Button>
-                    <Button variant="outline" onClick={() => setIsEditing(false)}>
+                    <Button variant="outline" onClick={() => setIsEditing(false)} className="w-full sm:w-auto">
                       Cancel
                     </Button>
                   </>
                 ) : (
-                  <Button onClick={() => setIsEditing(true)}>Edit Profile</Button>
+                  <Button onClick={() => setIsEditing(true)} className="w-full sm:w-auto">Edit Profile</Button>
                 )}
               </div>
             </CardContent>
@@ -260,11 +262,11 @@ export default function ProfilePage() {
                 Preferences
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="flex items-center justify-between">
+            <CardContent className="space-y-4 sm:space-y-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="space-y-0.5">
-                  <Label className="text-base">Dark Mode</Label>
-                  <p className="text-sm text-muted-foreground">
+                  <Label className="text-sm sm:text-base">Dark Mode</Label>
+                  <p className="text-xs sm:text-sm text-muted-foreground">
                     Switch between light and dark themes
                   </p>
                 </div>
@@ -280,10 +282,10 @@ export default function ProfilePage() {
 
               <Separator />
 
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="space-y-0.5">
-                  <Label className="text-base">Push Notifications</Label>
-                  <p className="text-sm text-muted-foreground">
+                  <Label className="text-sm sm:text-base">Push Notifications</Label>
+                  <p className="text-xs sm:text-sm text-muted-foreground">
                     Receive daily reminders for your habits
                   </p>
                 </div>
@@ -319,7 +321,7 @@ export default function ProfilePage() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="data" className="space-y-6">
+        <TabsContent value="data" className="space-y-4 sm:space-y-6">
           {/* Data Export */}
           <DataExportCard />
 
@@ -330,10 +332,10 @@ export default function ProfilePage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <p className="text-sm text-muted-foreground">
+                <p className="text-xs sm:text-sm text-muted-foreground">
                   This action is irreversible. All your habit data, completions, and Pokemon collection will be permanently deleted.
                 </p>
-                <Button variant="destructive" onClick={deleteAccount}>
+                <Button variant="destructive" onClick={deleteAccount} className="w-full sm:w-auto">
                   <Trash2 className="h-4 w-4 mr-2" />
                   Delete Account
                 </Button>

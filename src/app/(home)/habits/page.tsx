@@ -12,10 +12,10 @@ import { apiService, ApiHabit, PokemonReward } from "@/services/api";
 import { RewardResult } from "@/lib/gamification-manager";
 import { Plus, Search, Filter, Target } from "lucide-react";
 
-// Lazy load Pokemon reward card for better performance
-const PokemonRewardCard = lazy(() => 
-  import("@/components/pokemon-reward-card").then(module => ({
-    default: module.PokemonRewardCard
+// Lazy load Pokemon reward popup for better performance
+const PokemonRewardPopup = lazy(() => 
+  import('@/components/pokemon-reward-popup').then(module => ({
+    default: module.PokemonRewardPopup
   }))
 );
 
@@ -438,10 +438,20 @@ export default function HabitsPage() {
             <p className="text-center text-gray-600">Loading your reward...</p>
           </div>
         </div>}>
-          <PokemonRewardCard
-            reward={pokemonRewards[currentRewardIndex]}
+          <PokemonRewardPopup
+            pokemon={pokemonRewards[currentRewardIndex]?.pokemon ? {
+              id: pokemonRewards[currentRewardIndex].pokemon.id,
+              name: pokemonRewards[currentRewardIndex].pokemon.name,
+              imageUrl: pokemonRewards[currentRewardIndex].pokemon.image,
+              type: pokemonRewards[currentRewardIndex].pokemon.types || [],
+              rarity: (pokemonRewards[currentRewardIndex].pokemon.rarity === 'epic' ? 'rare' : 
+                      pokemonRewards[currentRewardIndex].pokemon.rarity === 'shiny' ? 'legendary' : 
+                      pokemonRewards[currentRewardIndex].pokemon.rarity) as 'common' | 'uncommon' | 'rare' | 'legendary',
+              isEvolution: false,
+              reason: `You earned a new Pokemon by completing your habit streak!`
+            } : null}
+            isOpen={true}
             onClose={handlePokemonRewardClose}
-            showCelebration={true}
           />
         </Suspense>
       )}

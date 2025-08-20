@@ -233,11 +233,11 @@ export function PokemonCollection({ userId }: PokemonCollectionProps) {
             </Card>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-              {filteredPokemon.map((pokemon) => {
+              {filteredPokemon.map((pokemon, index) => {
                 const config = getRarityConfig(pokemon.rarity);
                 
                 return (
-                  <Card key={pokemon.id} className={cn(
+                  <Card key={`${pokemon.pokemonId || pokemon._id || 'pokemon'}-${index}`} className={cn(
                     "transition-all hover:scale-105 cursor-pointer",
                     config.borderColor,
                     "border-2"
@@ -307,7 +307,7 @@ export function PokemonCollection({ userId }: PokemonCollectionProps) {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {stats.achievements.map((achievement, index) => (
-                <Card key={index}>
+                <Card key={`${achievement.name}-${achievement.unlockedAt}-${index}`}>
                   <CardContent className="p-4">
                     <div className="flex items-center gap-3">
                       <div className="text-3xl">{achievement.icon}</div>

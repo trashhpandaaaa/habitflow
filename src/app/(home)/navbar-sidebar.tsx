@@ -42,10 +42,14 @@ export const NavbarSidebar = ({ items, open, onOpenChange }: Props) => {
           <div className="border-t">
             {isSignedIn ? (
               <div className="flex flex-col">
-                <div className="w-full p-4 flex items-center gap-2 text-base font-medium">
+                <Link
+                  href="/profile"
+                  className="w-full text-left p-4 hover:bg-black hover:text-white flex items-center gap-2 text-base font-medium"
+                  onClick={() => onOpenChange(false)}
+                >
                   <User className="h-4 w-4" />
                   <span>{user?.firstName || 'User'}</span>
-                </div>
+                </Link>
                 <SignOutButton>
                   <button
                     className="w-full text-left p-4 hover:bg-black hover:text-white flex items-center gap-2 text-base font-medium"

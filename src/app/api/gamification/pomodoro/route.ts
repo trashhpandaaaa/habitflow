@@ -15,23 +15,46 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { sessionType, duration } = await request.json();
+    const { pokemonId } = await request.json();
     
-    // Only work sessions count towards evolution (25 minutes standard)
-    if (sessionType === 'work' && duration >= 20) {
-      const evolutionRewards = await GamificationManager.handlePomodoroCompletion(userId, 1);
-      
-      return NextResponse.json({
-        success: true,
-        message: 'Pomodoro session completed',
-        evolutionRewards
-      });
+    // Handle Pokemon evolution from Pomodoro completion
+    if (pokemonId) {
+      try {
+        // For now, simulate evolution by returning evolved Pokemon data
+        // In production, you'd check evolution requirements and update database
+        const evolutionId = pokemonId + 1; // Simple evolution logic
+        
+        // Mock evolution response - replace with actual evolution logic
+        const evolvedPokemon = {
+          id: evolutionId,
+          name: `Evolved Pokemon ${evolutionId}`,
+          imageUrl: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${evolutionId}.png`,
+          type: ['normal'],
+          rarity: 'uncommon' as const,
+          isEvolution: true,
+          evolutionStage: 2,
+        };
+        
+        return NextResponse.json({
+          evolved: true,
+          pokemon: evolvedPokemon
+        });
+      } catch (error) {
+        console.error('Evolution error:', error);
+        return NextResponse.json({
+          evolved: false,
+          message: 'Evolution failed'
+        });
+      }
     }
+    
+    // Generic Pomodoro completion without specific Pokemon
+    const generalRewards = await GamificationManager.handlePomodoroCompletion(userId, 1);
     
     return NextResponse.json({
       success: true,
       message: 'Pomodoro session completed',
-      evolutionRewards: []
+      rewards: generalRewards
     });
     
   } catch (error) {

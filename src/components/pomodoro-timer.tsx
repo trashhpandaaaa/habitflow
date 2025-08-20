@@ -5,10 +5,38 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { Play, Pause, Square, RotateCcw } from "lucide-react";
+import { Play, Pause, Square, RotateCcw, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useUser } from "@clerk/nextjs";
+import { PokemonSelector } from './pokemon-selector';
+import { PokemonRewardPopup } from './pokemon-reward-popup';
+import Image from "next/image";
 
 export type SessionType = 'work' | 'break' | 'longBreak';
+
+interface Pokemon {
+  id: number;
+  name: string;
+  imageUrl: string;
+  type: string[];
+  canEvolve: boolean;
+  evolutionTarget?: {
+    id: number;
+    name: string;
+    imageUrl: string;
+  };
+}
+
+interface PokemonReward {
+  id: number;
+  name: string;
+  imageUrl: string;
+  type: string[];
+  rarity: 'common' | 'uncommon' | 'rare' | 'legendary';
+  isEvolution: boolean;
+  evolutionStage?: number;
+  reason?: string;
+}
 
 export interface PomodoroSettings {
   workDuration: number; // in minutes
@@ -45,10 +73,15 @@ export function PomodoroTimer({
   onStatsUpdate,
   className
 }: PomodoroTimerProps) {
+  const { user } = useUser();
   const [currentSession, setCurrentSession] = useState<SessionType>('work');
   const [timeLeft, setTimeLeft] = useState(settings.workDuration * 60); // in seconds
   const [isRunning, setIsRunning] = useState(false);
   const [sessionCount, setSessionCount] = useState(0);
+  const [selectedPokemon, setSelectedPokemon] = useState<Pokemon | null>(null);
+  const [showPokemonSelector, setShowPokemonSelector] = useState(false);
+  const [rewardPokemon, setRewardPokemon] = useState<PokemonReward | null>(null);
+  const [showRewardPopup, setShowRewardPopup] = useState(false);
   const [stats, setStats] = useState<PomodoroStats>({
     totalSessions: 0,
     totalWorkTime: 0,
@@ -91,14 +124,30 @@ export function PomodoroTimer({
       });
 
       // Also check for Pokemon evolution after completing a work session
-      if (sessionData.sessionType === 'work' && sessionData.completed) {
+      if (sessionData.sessionType === 'work' && sessionData.completed && selectedPokemon) {
         try {
-          await fetch('/api/gamification/pomodoro', {
+          const evolutionResponse = await fetch('/api/gamification/pomodoro', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
+            body: JSON.stringify({
+              pokemonId: selectedPokemon.id,
+            }),
           });
+
+          if (evolutionResponse.ok) {
+            const evolutionData = await evolutionResponse.json();
+            if (evolutionData.evolved && evolutionData.pokemon) {
+              setRewardPokemon({
+                ...evolutionData.pokemon,
+                isEvolution: true,
+                reason: `Your ${selectedPokemon.name} evolved after completing a Pomodoro session!`
+              });
+              setShowRewardPopup(true);
+              setSelectedPokemon(null); // Clear selection since Pokemon evolved
+            }
+          }
         } catch (evolutionError) {
           console.error('Error checking Pokemon evolution:', evolutionError);
         }
@@ -106,7 +155,7 @@ export function PomodoroTimer({
     } catch (error) {
       console.error('Error saving pomodoro session:', error);
     }
-  }, []);
+  }, [selectedPokemon]);
 
   const getCurrentSessionDuration = useCallback(() => {
     switch (currentSession) {
@@ -327,6 +376,64 @@ export function PomodoroTimer({
           </Button>
         </div>
 
+        {/* Pokemon Selection for Work Sessions */}
+        {currentSession === 'work' && user && (
+          <div className="border-t pt-4">
+            <div className="space-y-3">
+              <div className="text-center">
+                <p className="text-sm font-medium">Pokemon Evolution</p>
+                <p className="text-xs text-muted-foreground">
+                  Complete this session to evolve your selected Pokemon!
+                </p>
+              </div>
+              
+              {selectedPokemon ? (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="relative w-12 h-12">
+                        <Image
+                          src={selectedPokemon.imageUrl}
+                          alt={selectedPokemon.name}
+                          fill
+                          className="object-contain"
+                          sizes="48px"
+                        />
+                      </div>
+                      <div>
+                        <p className="font-medium text-blue-800 capitalize">
+                          {selectedPokemon.name}
+                        </p>
+                        <p className="text-xs text-blue-600">Ready to evolve!</p>
+                      </div>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowPokemonSelector(true)}
+                      className="text-blue-700 border-blue-300 hover:bg-blue-100"
+                    >
+                      <Zap className="h-4 w-4 mr-1" />
+                      Change
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center">
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowPokemonSelector(true)}
+                    className="w-full"
+                  >
+                    <Zap className="h-4 w-4 mr-2" />
+                    Select Pokemon to Evolve
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Session Info */}
         <div className="grid grid-cols-2 gap-4 text-center text-sm">
           <div>
@@ -347,6 +454,27 @@ export function PomodoroTimer({
           {currentSession !== 'work' && <>Next: Focus Time</>}
         </div>
       </CardContent>
+
+      {/* Pokemon Selector Modal */}
+      {user && (
+        <PokemonSelector
+          userId={user.id}
+          selectedPokemon={selectedPokemon}
+          onPokemonSelect={setSelectedPokemon}
+          isOpen={showPokemonSelector}
+          onOpenChange={setShowPokemonSelector}
+        />
+      )}
+
+      {/* Pokemon Reward Popup */}
+      <PokemonRewardPopup
+        pokemon={rewardPokemon}
+        isOpen={showRewardPopup}
+        onClose={() => {
+          setShowRewardPopup(false);
+          setRewardPokemon(null);
+        }}
+      />
     </Card>
   );
 }

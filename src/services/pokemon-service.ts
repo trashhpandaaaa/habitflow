@@ -101,6 +101,23 @@ export class PokemonService {
     138: { stage1: 138, stage2: 139 },            // Omanyte -> Omastar
     140: { stage1: 140, stage2: 141 },            // Kabuto -> Kabutops
     147: { stage1: 147, stage2: 148, stage3: 149 }, // Dratini -> Dragonair -> Dragonite
+    
+    // Hoenn Pokemon (Gen 3)
+    252: { stage1: 252, stage2: 253, stage3: 254 }, // Treecko -> Grovyle -> Sceptile
+    255: { stage1: 255, stage2: 256, stage3: 257 }, // Torchic -> Combusken -> Blaziken
+    258: { stage1: 258, stage2: 259, stage3: 260 }, // Mudkip -> Marshtomp -> Swampert
+    261: { stage1: 261, stage2: 262 },            // Poochyena -> Mightyena
+    263: { stage1: 263, stage2: 264 },            // Zigzagoon -> Linoone
+    265: { stage1: 265, stage2: 266, stage3: 267 }, // Wurmple -> Silcoon -> Beautifly
+    270: { stage1: 270, stage2: 271, stage3: 272 }, // Lotad -> Lombre -> Ludicolo
+    273: { stage1: 273, stage2: 274, stage3: 275 }, // Seedot -> Nuzleaf -> Shiftry
+    276: { stage1: 276, stage2: 277 },            // Taillow -> Swellow
+    278: { stage1: 278, stage2: 279 },            // Wingull -> Pelipper
+    283: { stage1: 283, stage2: 284 },            // Surskit -> Masquerain
+    285: { stage1: 285, stage2: 286 },            // Shroomish -> Breloom
+    287: { stage1: 287, stage2: 288 },            // Slakoth -> Vigoroth -> Slaking (simplified to 2-stage)
+    290: { stage1: 290, stage2: 291, stage3: 292 }, // Nincada -> Ninjask (simplified)
+    293: { stage1: 293, stage2: 294, stage3: 295 }, // Whismur -> Loudred -> Exploud
   };
 
   // Pokemon rarity based on their original game rarity/legendaries
