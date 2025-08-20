@@ -30,6 +30,62 @@ interface DataType {
   statistics: boolean;
 }
 
+// Type definitions for export data
+interface ExportUser {
+  clerkId: string;
+  email: string;
+  name: string;
+  joinDate: string;
+  settings: {
+    darkMode: boolean;
+    notifications: boolean;
+    reminderTime: string;
+  };
+}
+
+interface ExportHabit {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  targetCount: number;
+  frequency: string;
+  completedCount: number;
+  currentStreak: number;
+  bestStreak: number;
+  reminderTime: string;
+  color: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface ExportHabitCompletion {
+  habitId: string;
+  habitName: string;
+  date: string;
+  completedAt: string;
+  count: number;
+}
+
+interface ExportPomodoroSession {
+  sessionType: string;
+  duration: number;
+  date: string;
+  completedAt: string;
+}
+
+interface ExportData {
+  user: ExportUser;
+  habits: ExportHabit[];
+  habitCompletions: ExportHabitCompletion[];
+  pomodoroSessions: ExportPomodoroSession[];
+  exportedAt: string;
+  totalHabits: number;
+  totalCompletions: number;
+  totalPomodoroSessions: number;
+}
+
 interface AdvancedOptions {
   includeDeletedHabits: boolean;
   compressOutput: boolean;
@@ -95,19 +151,52 @@ export default function DataExportCard() {
     setExportProgress(0);
 
     try {
-      // Simulate progress
-      for (let i = 0; i <= 100; i += 10) {
-        setExportProgress(i);
-        await new Promise(resolve => setTimeout(resolve, 200));
+      // Update progress
+      setExportProgress(25);
+
+      // Call the export API
+      const response = await fetch(`/api/export?format=${format === 'xlsx' || format === 'pdf' ? 'json' : format}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      setExportProgress(50);
+
+      if (!response.ok) {
+        throw new Error(`Export failed: ${response.statusText}`);
       }
 
-      // TODO: Implement actual export functionality
-      // const exportData = await apiService.downloadExport(format, {
-      //   dateRange,
-      //   selectedDataTypes,
-      //   advancedOptions
-      // });
+      setExportProgress(75);
 
+      // Get the data and create download
+      if (format === 'json' || format === 'xlsx' || format === 'pdf') {
+        const data = await response.json();
+        
+        if (format === 'json') {
+          // Download JSON file
+          const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+          downloadBlob(blob, `habitflow-data-${new Date().toISOString().split('T')[0]}.json`);
+        } else if (format === 'xlsx') {
+          // Convert JSON to CSV for Excel
+          const csvContent = convertJsonToCsv(data);
+          const blob = new Blob([csvContent], { type: 'text/csv' });
+          downloadBlob(blob, `habitflow-data-${new Date().toISOString().split('T')[0]}.xlsx`);
+        } else if (format === 'pdf') {
+          // For PDF, we'll create a formatted text version
+          const pdfContent = convertJsonToPdfText(data);
+          const blob = new Blob([pdfContent], { type: 'text/plain' });
+          downloadBlob(blob, `habitflow-data-${new Date().toISOString().split('T')[0]}.txt`);
+        }
+      } else if (format === 'csv') {
+        // Download CSV file directly
+        const csvData = await response.text();
+        const blob = new Blob([csvData], { type: 'text/csv' });
+        downloadBlob(blob, `habitflow-data-${new Date().toISOString().split('T')[0]}.csv`);
+      }
+
+      setExportProgress(100);
       setSuccess(`Data exported successfully as ${format.toUpperCase()}!`);
       
       // Add to export history
@@ -126,10 +215,106 @@ export default function DataExportCard() {
     } catch (error) {
       console.error('Export failed:', error);
       setError(`Failed to export data as ${format.toUpperCase()}. Please try again.`);
+      
+      // Add failed export to history
+      const failedExport: ExportHistoryItem = {
+        id: Date.now(),
+        format: format,
+        date: new Date().toISOString().split('T')[0],
+        status: 'failed',
+        size: '0 KB',
+        dateRange: dateRange.from && dateRange.to 
+          ? `${formatDate(dateRange.from, 'MMM dd')} - ${formatDate(dateRange.to, 'MMM dd, yyyy')}`
+          : undefined
+      };
+      
+      setExportHistory(prev => [failedExport, ...prev]);
     } finally {
       setIsExporting(false);
       setExportProgress(0);
     }
+  };
+
+  // Helper function to trigger file download
+  const downloadBlob = (blob: Blob, filename: string) => {
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  };
+
+  // Helper function to convert JSON to CSV format
+  const convertJsonToCsv = (data: ExportData) => {
+    let csv = '';
+    
+    // User data
+    csv += 'User Information\n';
+    csv += `ID,Email,Name,Join Date\n`;
+    csv += `${data.user.clerkId},"${data.user.email}","${data.user.name}",${data.user.joinDate}\n\n`;
+    
+    // Habits
+    csv += 'Habits\n';
+    csv += 'ID,Name,Description,Category,Target Count,Frequency,Completed Count,Current Streak,Best Streak,Active,Created At\n';
+    data.habits.forEach((habit: ExportHabit) => {
+      csv += `${habit.id},"${habit.name}","${habit.description}",${habit.category},${habit.targetCount},${habit.frequency},${habit.completedCount},${habit.currentStreak},${habit.bestStreak},${habit.isActive},${habit.createdAt}\n`;
+    });
+    
+    csv += '\nHabit Completions\n';
+    csv += 'Habit ID,Habit Name,Date,Completed At,Count\n';
+    data.habitCompletions.forEach((completion: ExportHabitCompletion) => {
+      csv += `${completion.habitId},"${completion.habitName}",${completion.date},${completion.completedAt},${completion.count}\n`;
+    });
+    
+    if (data.pomodoroSessions.length > 0) {
+      csv += '\nPomodoro Sessions\n';
+      csv += 'Session Type,Duration,Date,Completed At\n';
+      data.pomodoroSessions.forEach((session: ExportPomodoroSession) => {
+        csv += `${session.sessionType},${session.duration},${session.date},${session.completedAt}\n`;
+      });
+    }
+    
+    return csv;
+  };
+
+  // Helper function to convert JSON to PDF-friendly text
+  const convertJsonToPdfText = (data: ExportData) => {
+    let text = 'HABITFLOW DATA EXPORT\n';
+    text += '===================\n\n';
+    
+    text += 'USER INFORMATION\n';
+    text += '----------------\n';
+    text += `Name: ${data.user.name}\n`;
+    text += `Email: ${data.user.email}\n`;
+    text += `Join Date: ${new Date(data.user.joinDate).toLocaleDateString()}\n\n`;
+    
+    text += 'HABITS SUMMARY\n';
+    text += '--------------\n';
+    text += `Total Habits: ${data.totalHabits}\n`;
+    text += `Total Completions: ${data.totalCompletions}\n`;
+    text += `Total Pomodoro Sessions: ${data.totalPomodoroSessions}\n\n`;
+    
+    text += 'HABITS DETAILS\n';
+    text += '--------------\n';
+    data.habits.forEach((habit: ExportHabit, index: number) => {
+      text += `${index + 1}. ${habit.name}\n`;
+      text += `   Category: ${habit.category}\n`;
+      text += `   Frequency: ${habit.frequency}\n`;
+      text += `   Progress: ${habit.completedCount}/${habit.targetCount}\n`;
+      text += `   Current Streak: ${habit.currentStreak} days\n`;
+      text += `   Best Streak: ${habit.bestStreak} days\n`;
+      if (habit.description) {
+        text += `   Description: ${habit.description}\n`;
+      }
+      text += '\n';
+    });
+    
+    text += `\nExported on: ${new Date(data.exportedAt).toLocaleString()}\n`;
+    
+    return text;
   };
 
   const handlePreview = async () => {
