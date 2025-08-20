@@ -33,11 +33,13 @@ export interface ApiHabit {
   target: number;
   frequency: 'daily' | 'weekly' | 'monthly';
   completedToday?: boolean;
+  completedCount?: number;  // Added missing field
   currentStreak: number;
   bestStreak: number;
   userId: string;
   createdAt: string;
   updatedAt: string;
+  lastCompletedAt?: string;  // Added missing field
   color?: string;
 }
 

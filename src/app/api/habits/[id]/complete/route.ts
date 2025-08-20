@@ -60,10 +60,18 @@ export async function POST(
       // Remove completion
       await HabitCompletion.deleteOne({ _id: existingCompletion._id });
       
+      // Recalculate completion count from actual completions to ensure accuracy
+      const totalCompletions = await HabitCompletion.countDocuments({
+        habitId: new mongoose.Types.ObjectId(habitId),
+        userId: userId
+      });
+
       // Update habit stats
       const currentStreak = Math.max(0, (habit.currentStreak || 1) - 1);
+      
       await Habit.findByIdAndUpdate(habitId, {
         currentStreak,
+        completedCount: totalCompletions, // Use accurate count from database
         completedToday: false,
       });
 
@@ -71,6 +79,7 @@ export async function POST(
         message: 'Habit completion removed',
         completed: false,
         currentStreak,
+        completedCount: totalCompletions,
       });
     } else {
       // Add completion
@@ -83,6 +92,12 @@ export async function POST(
 
       await completion.save();
 
+      // Recalculate completion count from actual completions to ensure accuracy
+      const totalCompletions = await HabitCompletion.countDocuments({
+        habitId: new mongoose.Types.ObjectId(habitId),
+        userId: userId
+      });
+
       // Update habit stats
       const currentStreak = (habit.currentStreak || 0) + 1;
       const bestStreak = Math.max(habit.bestStreak || 0, currentStreak);
@@ -90,6 +105,7 @@ export async function POST(
       const updatedHabit = await Habit.findByIdAndUpdate(habitId, {
         currentStreak,
         bestStreak,
+        completedCount: totalCompletions, // Use accurate count from database
         completedToday: true,
         lastCompletedAt: new Date(),
       }, { new: true });
@@ -112,6 +128,7 @@ export async function POST(
         completed: true,
         completion,
         currentStreak,
+        completedCount: totalCompletions,
         pokemonRewards, // Include Pokemon rewards in the response
       });
     }

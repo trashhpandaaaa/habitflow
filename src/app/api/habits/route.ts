@@ -38,13 +38,18 @@ export async function GET() {
     const habits = await Habit.find({ userId: user._id })
       .sort({ createdAt: -1 });
 
-    // Transform targetCount to target for API compatibility
+    // Transform habits to include all necessary fields for the frontend
     const transformedHabits = habits.map(habit => {
       const habitObj = habit.toObject();
       return {
         ...habitObj,
-        target: habitObj.targetCount,
-        targetCount: undefined // Remove the original field
+        target: habitObj.targetCount, // Frontend expects 'target' field
+        // Keep all other fields from the model
+        completedCount: habitObj.completedCount || 0,
+        currentStreak: habitObj.currentStreak || 0,
+        bestStreak: habitObj.bestStreak || 0,
+        completedToday: habitObj.completedToday || false,
+        lastCompletedAt: habitObj.lastCompletedAt || null,
       };
     });
 
@@ -124,10 +129,10 @@ export async function POST(request: NextRequest) {
       targetCount: undefined // Remove the original field
     };
 
-    const response: { habit: object; firstHabitReward?: object } = { habit: transformedHabit };
+    const responseData: { habit: object; firstHabitReward?: object } = { habit: transformedHabit };
     
     if (firstHabitReward) {
-      response.firstHabitReward = {
+      responseData.firstHabitReward = {
         pokemon: firstHabitReward.pokemon,
         isNewReward: firstHabitReward.isNewReward,
         experienceGained: firstHabitReward.experienceGained,
@@ -138,7 +143,7 @@ export async function POST(request: NextRequest) {
       };
     }
 
-    return NextResponse.json(response, { status: 201 });
+    return NextResponse.json(responseData, { status: 201 });
   } catch (error) {
     console.error('Create habit error:', error);
     return NextResponse.json(

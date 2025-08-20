@@ -268,20 +268,21 @@ export function PokemonGoals({ userId, className }: PokemonGoalsProps) {
         </p>
       </CardHeader>
       
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6">
         {/* Category Filter */}
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
           {categories.map(category => (
             <Button
               key={category.id}
               variant={selectedCategory === category.id ? 'default' : 'outline'}
               size="sm"
               onClick={() => setSelectedCategory(category.id)}
-              className="flex items-center gap-1"
+              className="flex items-center gap-1 text-xs sm:text-sm h-8 sm:h-9 px-2 sm:px-3"
             >
               {getCategoryIcon(category.id)}
-              <span>{category.name}</span>
-              <Badge variant="secondary" className="ml-1">
+              <span className="hidden xs:inline">{category.name}</span>
+              <span className="xs:hidden">{category.name.split(' ')[0]}</span>
+              <Badge variant="secondary" className="ml-1 text-[10px] sm:text-xs px-1">
                 {category.count}
               </Badge>
             </Button>
@@ -308,15 +309,17 @@ export function PokemonGoals({ userId, className }: PokemonGoalsProps) {
                     goal.isCompleted ? "bg-green-50 border-green-200" : rarityConfig.borderColor
                   )}
                 >
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          {goal.icon}
-                          <h3 className="font-semibold">{goal.title}</h3>
-                          {goal.isCompleted && (
-                            <CheckCircle className="h-4 w-4 text-green-600" />
-                          )}
+                  <CardContent className="p-3 sm:p-4">
+                    <div className="flex flex-col lg:flex-row lg:items-start gap-4">
+                      <div className="flex-1 space-y-3">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <div className="flex items-center gap-2">
+                            {goal.icon}
+                            <h3 className="font-semibold text-sm sm:text-base">{goal.title}</h3>
+                            {goal.isCompleted && (
+                              <CheckCircle className="h-4 w-4 text-green-600 flex-shrink-0" />
+                            )}
+                          </div>
                           {goal.timeframe && (
                             <Badge variant="outline" className="text-xs">
                               {goal.timeframe}
@@ -324,12 +327,12 @@ export function PokemonGoals({ userId, className }: PokemonGoalsProps) {
                           )}
                         </div>
                         
-                        <p className="text-sm text-gray-600 mb-3">
+                        <p className="text-xs sm:text-sm text-gray-600">
                           {goal.description}
                         </p>
                         
                         <div className="space-y-2">
-                          <div className="flex items-center justify-between text-sm">
+                          <div className="flex items-center justify-between text-xs sm:text-sm">
                             <span>Progress</span>
                             <span className="font-medium">
                               {goal.current} / {goal.target}
@@ -344,15 +347,15 @@ export function PokemonGoals({ userId, className }: PokemonGoalsProps) {
                       
                       {/* Reward Preview */}
                       <div className={cn(
-                        "ml-4 p-3 rounded-lg text-center min-w-[120px]",
+                        "p-3 rounded-lg text-center w-full lg:w-auto lg:min-w-[120px] lg:max-w-[140px]",
                         rarityConfig.bgColor,
                         rarityConfig.borderColor,
                         "border"
                       )}>
-                        <div className="text-2xl mb-1 flex justify-center">
-                          {goal.reward.type === 'pokemon' && <Gift className="h-6 w-6" />}
-                          {goal.reward.type === 'evolution' && <Zap className="h-6 w-6" />}
-                          {goal.reward.type === 'achievement' && <Trophy className="h-6 w-6" />}
+                        <div className="flex justify-center mb-2">
+                          {goal.reward.type === 'pokemon' && <Gift className="h-5 w-5 sm:h-6 sm:w-6" />}
+                          {goal.reward.type === 'evolution' && <Zap className="h-5 w-5 sm:h-6 sm:w-6" />}
+                          {goal.reward.type === 'achievement' && <Trophy className="h-5 w-5 sm:h-6 sm:w-6" />}
                         </div>
                         <div className={cn("text-xs font-medium mb-1", rarityConfig.textColor)}>
                           {goal.reward.name}
@@ -379,27 +382,27 @@ export function PokemonGoals({ userId, className }: PokemonGoalsProps) {
         </div>
 
         {/* Quick Tips */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <h4 className="font-semibold text-blue-800 mb-2 flex items-center gap-2">
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 sm:p-4">
+          <h4 className="font-semibold text-blue-800 mb-2 sm:mb-3 flex items-center gap-2 text-sm sm:text-base">
             <Sparkles className="h-4 w-4" />
             Pro Tips
           </h4>
-          <ul className="text-sm text-blue-700 space-y-2">
-            <li className="flex items-center gap-2">
-              <CheckCircle className="h-3 w-3 flex-shrink-0" />
-              Start with 3-day streaks to get your first evolvable Pokemon
+          <ul className="text-xs sm:text-sm text-blue-700 space-y-2">
+            <li className="flex items-start gap-2">
+              <CheckCircle className="h-3 w-3 flex-shrink-0 mt-0.5" />
+              <span>Start with 3-day streaks to get your first evolvable Pokemon</span>
             </li>
-            <li className="flex items-center gap-2">
-              <Zap className="h-3 w-3 flex-shrink-0" />
-              Use the Pomodoro timer to evolve your Pokemon collection
+            <li className="flex items-start gap-2">
+              <Zap className="h-3 w-3 flex-shrink-0 mt-0.5" />
+              <span>Use the Pomodoro timer to evolve your Pokemon collection</span>
             </li>
-            <li className="flex items-center gap-2">
-              <Star className="h-3 w-3 flex-shrink-0" />
-              Perfect days (completing all habits) give better rewards
+            <li className="flex items-start gap-2">
+              <Star className="h-3 w-3 flex-shrink-0 mt-0.5" />
+              <span>Perfect days (completing all habits) give better rewards</span>
             </li>
-            <li className="flex items-center gap-2">
-              <Crown className="h-3 w-3 flex-shrink-0" />
-              Longer streaks unlock rarer and more powerful Pokemon
+            <li className="flex items-start gap-2">
+              <Crown className="h-3 w-3 flex-shrink-0 mt-0.5" />
+              <span>Longer streaks unlock rarer and more powerful Pokemon</span>
             </li>
           </ul>
         </div>

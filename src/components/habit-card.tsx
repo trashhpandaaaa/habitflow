@@ -39,7 +39,9 @@ export function HabitCard({
   onDelete,
   showActions = true 
 }: HabitCardProps) {
-  const progressPercentage = Math.min((habit.completedCount / habit.targetCount) * 100, 100);
+  // Fix for progress calculation - if completedCount is 0 but there's a streak, use the streak
+  const effectiveCompletedCount = habit.completedCount > 0 ? habit.completedCount : habit.currentStreak;
+  const progressPercentage = Math.min((effectiveCompletedCount / habit.targetCount) * 100, 100);
   
   const getFrequencyText = () => {
     switch (habit.frequency) {
@@ -107,7 +109,7 @@ export function HabitCard({
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
             <span>Progress</span>
-            <span>{habit.completedCount}/{habit.targetCount}</span>
+            <span>{effectiveCompletedCount}/{habit.targetCount}</span>
           </div>
           <Progress value={progressPercentage} className="h-2" />
         </div>

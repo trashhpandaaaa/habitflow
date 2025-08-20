@@ -35,9 +35,9 @@ const convertApiHabitToHabit = (apiHabit: ApiHabit): Habit => {
     completedToday: apiHabit.completedToday || false,
     currentStreak: apiHabit.currentStreak || 0,
     bestStreak: apiHabit.bestStreak || 0,
-    completedCount: 0, // This would need to be calculated from completions
+    completedCount: apiHabit.completedCount ?? apiHabit.currentStreak ?? 0, // Use currentStreak as fallback
     createdAt: new Date(apiHabit.createdAt),
-    lastCompletedAt: undefined, // Would need to be calculated
+    lastCompletedAt: apiHabit.lastCompletedAt ? new Date(apiHabit.lastCompletedAt) : undefined,
     color: apiHabit.color || '#3B82F6' // Default color
   };
 };
@@ -92,13 +92,14 @@ export default function HabitsPage() {
   const loadHabits = async () => {
     try {
       const response = await apiService.getHabits();
+      
       // The API service returns { success: true, data: { habits: ApiHabit[] } }
       if (response.success && response.data) {
         const apiHabits = response.data.habits || [];
         const convertedHabits = apiHabits.map(convertApiHabitToHabit);
         setHabits(convertedHabits);
       } else {
-        console.error('Failed to load habits:', response.error);
+        console.error('Failed to load habits - Response:', response);
         setHabits([]);
       }
     } catch (error) {

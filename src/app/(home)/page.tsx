@@ -32,11 +32,21 @@ export default function Dashboard() {
   }, [isLoaded, user, searchParams]);
 
   const loadHabits = async () => {
-    const response = await apiService.getHabits();
-    if (response.success && response.data) {
-      setHabits(response.data.habits);
-    } else {
-      console.error('Failed to load habits:', response.error);
+    try {
+      const response = await apiService.getHabits();
+      
+      // Handle the API service response format
+      if (response.success && response.data) {
+        // The API returns { habits: [...] } and the service wraps it in { success: true, data: { habits: [...] } }
+        const habits = response.data.habits || [];
+        setHabits(habits);
+      } else {
+        console.error('Failed to load habits - Response:', response);
+        setHabits([]); // Set empty array on error
+      }
+    } catch (error) {
+      console.error('Error loading habits:', error);
+      setHabits([]); // Set empty array on error
     }
     setLoading(false);
   };
@@ -68,15 +78,16 @@ export default function Dashboard() {
     );
   }
 
-  // Calculate dashboard stats
-  const totalHabits = habits.length;
-  const completedToday = habits.filter(h => h.completedToday).length;
+  // Calculate dashboard stats with null checking
+  const safeHabits = habits || [];
+  const totalHabits = safeHabits.length;
+  const completedToday = safeHabits.filter(h => h.completedToday).length;
   const completionRate = totalHabits > 0 ? Math.round((completedToday / totalHabits) * 100) : 0;
-  const totalStreak = habits.reduce((sum, h) => sum + h.currentStreak, 0);
+  const totalStreak = safeHabits.reduce((sum, h) => sum + (h.currentStreak || 0), 0);
   const avgStreak = totalHabits > 0 ? Math.round(totalStreak / totalHabits) : 0;
 
   // Get today's habits (limit to 6 for dashboard view)
-  const todaysHabits = habits.slice(0, 6);
+  const todaysHabits = safeHabits.slice(0, 6);
 
   return (
     <div className="container mx-auto p-6 space-y-8">
