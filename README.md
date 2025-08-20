@@ -49,8 +49,8 @@ NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/dashboard
 
 1. Clone the repository:
    ```bash
-   git clone <repository-url>
-   cd habit-tracker-app
+   git clone https://github.com/trashhpandaaaa/habitflow
+   cd habitflow
    ```
 
 2. Install dependencies:
