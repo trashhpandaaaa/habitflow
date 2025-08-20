@@ -27,7 +27,7 @@ function ClerkSetupGuide() {
             Welcome to HabitFlow!
           </h1>
           <p className="text-lg text-gray-600">
-            Let's set up your authentication system to get started
+            Let&apos;s set up your authentication system to get started
           </p>
         </div>
 
@@ -48,14 +48,14 @@ function ClerkSetupGuide() {
                 <span className="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold mr-3 mt-0.5">2</span>
                 <div>
                   <p className="font-medium">Create a new application</p>
-                  <p className="text-sm text-gray-600">Choose "Next.js" as your framework</p>
+                  <p className="text-sm text-gray-600">Choose &quot;Next.js&quot; as your framework</p>
                 </div>
               </li>
               <li className="flex items-start">
                 <span className="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold mr-3 mt-0.5">3</span>
                 <div>
                   <p className="font-medium">Copy your API keys</p>
-                  <p className="text-sm text-gray-600">From the "API Keys" section in your Clerk dashboard</p>
+                  <p className="text-sm text-gray-600">From the &quot;API Keys&quot; section in your Clerk dashboard</p>
                 </div>
               </li>
               <li className="flex items-start">

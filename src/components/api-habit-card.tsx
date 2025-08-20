@@ -11,13 +11,11 @@ import { ApiHabit } from "@/services/api";
 interface ApiHabitCardProps {
   habit: ApiHabit;
   onToggleComplete: (habitId: string) => void;
-  showActions?: boolean;
 }
 
 export function ApiHabitCard({ 
   habit, 
-  onToggleComplete, 
-  showActions = true 
+  onToggleComplete
 }: ApiHabitCardProps) {
   const progressPercentage = Math.min((habit.completedCount / habit.targetCount) * 100, 100);
   

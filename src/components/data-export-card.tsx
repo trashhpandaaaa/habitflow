@@ -8,14 +8,9 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { apiService } from '@/services/api';
 
-interface ExportStats {
-  totalHabits: number;
-  totalCompletions: number;
-  totalPomodoroSessions: number;
-}
-
 export default function DataExportCard() {
   const [isExporting, setIsExporting] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [exportFormat, setExportFormat] = useState<'json' | 'csv'>('json');
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
