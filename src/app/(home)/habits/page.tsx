@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo, lazy, Suspense } from "react";
+import { useEffect, useState, useMemo, useCallback, lazy, Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -85,11 +85,49 @@ export default function HabitsPage() {
     return filtered;
   }, [habits, searchQuery, categoryFilter, statusFilter]);
 
+  const handleDayChange = useCallback(async () => {
+    try {
+      // First try to reset daily habits via API
+      await apiService.resetDailyHabits();
+    } catch (error) {
+      console.warn('Failed to reset daily habits via API:', error);
+    } finally {
+      // Always reload habits to get fresh data
+      loadHabits();
+    }
+  }, [loadHabits]);
+
   useEffect(() => {
     loadHabits();
-  }, []);
+    
+    // Set up day change detection
+    const lastLoadDate = localStorage.getItem('lastHabitsLoadDate');
+    const today = new Date().toISOString().split('T')[0];
+    
+    if (lastLoadDate && lastLoadDate !== today) {
+      // It's a new day, force reset and reload habits
+      console.log('New day detected, resetting and reloading habits...');
+      handleDayChange();
+    }
+    
+    localStorage.setItem('lastHabitsLoadDate', today);
 
-  const loadHabits = async () => {
+    // Set up interval to check for day changes every minute
+    const dayChangeInterval = setInterval(() => {
+      const currentDate = new Date().toISOString().split('T')[0];
+      const storedDate = localStorage.getItem('lastHabitsLoadDate');
+      
+      if (storedDate && storedDate !== currentDate) {
+        console.log('Day changed, resetting and reloading habits...');
+        localStorage.setItem('lastHabitsLoadDate', currentDate);
+        handleDayChange();
+      }
+    }, 60000); // Check every minute
+
+    return () => clearInterval(dayChangeInterval);
+  }, [loadHabits, handleDayChange]);
+
+  const loadHabits = useCallback(async () => {
     try {
       const response = await apiService.getHabits();
       
@@ -108,7 +146,7 @@ export default function HabitsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   const handleToggleComplete = async (habitId: string) => {
     try {

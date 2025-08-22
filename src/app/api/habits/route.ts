@@ -5,6 +5,7 @@ import Habit from '@/models/Habit';
 import User from '@/models/User';
 import { GamificationManager } from '@/lib/gamification-manager';
 import connectDB from '@/lib/mongodb';
+import { resetDailyHabits } from '@/lib/daily-reset';
 
 // Get all habits for user
 export async function GET() {
@@ -34,6 +35,9 @@ export async function GET() {
         }
       });
     }
+
+    // Reset daily habits that should no longer be marked as completed
+    await resetDailyHabits(userId);
 
     const habits = await Habit.find({ userId: user._id })
       .sort({ createdAt: -1 });

@@ -189,6 +189,12 @@ class ApiService {
     return this.request('/completions');
   }
 
+  async resetDailyHabits(): Promise<ApiResponse<{ message: string; timestamp: string }>> {
+    return this.request('/habits/reset-daily', {
+      method: 'POST',
+    });
+  }
+
   // Pomodoro methods
   async getPomodoroSessions(startDate?: string, endDate?: string, type?: string): Promise<ApiResponse<{ sessions: PomodoroSession[] }>> {
     const params = new URLSearchParams();
