@@ -85,6 +85,27 @@ export default function HabitsPage() {
     return filtered;
   }, [habits, searchQuery, categoryFilter, statusFilter]);
 
+  const loadHabits = useCallback(async () => {
+    try {
+      const response = await apiService.getHabits();
+      
+      // The API service returns { success: true, data: { habits: ApiHabit[] } }
+      if (response.success && response.data) {
+        const apiHabits = response.data.habits || [];
+        const convertedHabits = apiHabits.map(convertApiHabitToHabit);
+        setHabits(convertedHabits);
+      } else {
+        console.error('Failed to load habits - Response:', response);
+        setHabits([]);
+      }
+    } catch (error) {
+      console.error('Failed to load habits:', error);
+      setHabits([]); // Set empty array on error
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   const handleDayChange = useCallback(async () => {
     try {
       // First try to reset daily habits via API
@@ -126,27 +147,6 @@ export default function HabitsPage() {
 
     return () => clearInterval(dayChangeInterval);
   }, [loadHabits, handleDayChange]);
-
-  const loadHabits = useCallback(async () => {
-    try {
-      const response = await apiService.getHabits();
-      
-      // The API service returns { success: true, data: { habits: ApiHabit[] } }
-      if (response.success && response.data) {
-        const apiHabits = response.data.habits || [];
-        const convertedHabits = apiHabits.map(convertApiHabitToHabit);
-        setHabits(convertedHabits);
-      } else {
-        console.error('Failed to load habits - Response:', response);
-        setHabits([]);
-      }
-    } catch (error) {
-      console.error('Failed to load habits:', error);
-      setHabits([]); // Set empty array on error
-    } finally {
-      setLoading(false);
-    }
-  }, []);
 
   const handleToggleComplete = async (habitId: string) => {
     try {

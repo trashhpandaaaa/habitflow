@@ -104,29 +104,33 @@ export async function recalculateStreak(habitId: string, userId: string, frequen
     if (completions.length === 0) return 0;
 
     let currentStreak = 0;
-    let expectedDate = new Date();
+    const today = new Date();
     
-    for (const completion of completions) {
+    // Check each completion to see if it fits the expected streak pattern
+    for (let i = 0; i < completions.length; i++) {
+      const completion = completions[i];
       const completionDate = new Date(completion.date);
+      
+      // Calculate what date we expect for this streak position
+      const expectedDate = new Date(today);
+      switch (frequency) {
+        case 'daily':
+          expectedDate.setDate(today.getDate() - i);
+          break;
+        case 'weekly':
+          expectedDate.setDate(today.getDate() - (i * 7));
+          break;
+        case 'monthly':
+          expectedDate.setMonth(today.getMonth() - i);
+          break;
+      }
+      
       const expectedDateStr = expectedDate.toISOString().split('T')[0];
       const completionDateStr = completionDate.toISOString().split('T')[0];
       
       if (completionDateStr === expectedDateStr) {
         currentStreak++;
-        
-        // Move to next expected date based on frequency
-        switch (frequency) {
-          case 'daily':
-            expectedDate.setDate(expectedDate.getDate() - 1);
-            break;
-          case 'weekly':
-            expectedDate.setDate(expectedDate.getDate() - 7);
-            break;
-          case 'monthly':
-            expectedDate.setMonth(expectedDate.getMonth() - 1);
-            break;
-        }
-      } else if (completionDateStr < expectedDateStr) {
+      } else {
         // Gap in streak, stop counting
         break;
       }
